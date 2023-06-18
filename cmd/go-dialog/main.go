@@ -59,7 +59,7 @@ func main() {
 		s, ok, err = dialog.PasswordBox("PasswordBox widget", "default")
 		fmt.Printf("<%s> %s %s\n", s, ok, err)
 	case "Pause":
-		ok, err = dialog.Pause("Pause widget", 3)
+		ok, err = dialog.Pause("Pause widget", 5)
 		fmt.Printf("%s %s\n", ok, err)
 	case "Radiolist":
 		s, ok, err = dialog.RadioList("Radiolist widget", []dialog.TagItemStatus {

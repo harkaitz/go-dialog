@@ -16,10 +16,14 @@ var globalArgs2 []string = []string {}
 var height string = "0"
 var width  string = "0"
 
+// AddG add global flags to dialog(1) to be used by all later
+// calls. It can be used for example to set the backtitle
+// with dialog.AddG("--backtitle", "MY Title").
 func AddG(options ...string) {
 	globalArgs1 = append(globalArgs1, options...)
 }
 
+// ConfigG overwrites or adds flags to dialog(1).
 func ConfigG(options ...string) {
 	for i, o := range globalArgs1 {
 		if options[0] != o {
@@ -33,10 +37,13 @@ func ConfigG(options ...string) {
 	AddG(options...)
 }
 
+// Config add flags to dialog(1) that will only be used in the
+// next call.
 func Config(options ...string) {
 	globalArgs2 = append(globalArgs2, options...)
 }
 
+// Size sets the default size for windows.
 func Size(h, w int) {
 	height = strconv.Itoa(h)
 	width = strconv.Itoa(w)
@@ -81,6 +88,7 @@ func ExecDialog(args ...string) (res string, ok bool, err error) {
 // ===================================================================
 // ==== WIDGETS ======================================================
 // ===================================================================
+
 // Unimplemented:
 // - buildlist
 // - gauge
@@ -96,13 +104,17 @@ func ExecDialog(args ...string) (res string, ok bool, err error) {
 // - timebox
 // - treeview
 
-
+// TagItemStatus describes an item box. When selected "Tag" is used
+// to identify each item. "Item" is the actual name displayed. "Status"
+// can be "on" or "off".
 type TagItemStatus struct {
 	Tag    string
 	Item   string
 	Status string
 }
 
+// FormField represents a form field. It is placed in the coordinates
+// "YPos", "XPos". The question is "Label" and default answer "Value".
 type FormField struct {
 	Label string
 	Value string
@@ -110,12 +122,14 @@ type FormField struct {
 	XPos  int
 }
 
+// MenuItem represents an item in a menu.
 type MenuItem struct {
 	Key  string
 	Text string
 }
 
-
+// Calendar displays month, day and year and asks the user to
+// choose a day.
 func Calendar(text string, stime time.Time) (t time.Time, ok bool, err error) {
 	var tS string
 	year, month, day := stime.Date()
@@ -136,6 +150,7 @@ func Calendar(text string, stime time.Time) (t time.Time, ok bool, err error) {
 	return
 }
 
+// CheckList a multiple entry menu.
 func CheckList(msg string, items []TagItemStatus) (tags []string, ok bool, err error) {
 	cmd := []string { "--checklist", msg, height, width, "0" }
 	for _, i := range items {
@@ -148,14 +163,17 @@ func CheckList(msg string, items []TagItemStatus) (tags []string, ok bool, err e
 	return strings.Split(str, " "), ok, err
 }
 
+// DSelect asks the user for a directory.
 func DSelect(dir string) (path string, ok bool, err error) {
 	return ExecDialog("--dselect", dir, height, width)
 }
 
+// EditBox opens an small text editor.
 func EditBox(file string) (content string, ok bool, err error) {
 	return ExecDialog("--editbox", file, height, width)
 }
 
+// Form displays a form with multiple fields.
 func Form(msg string, labelWidth, valueWidth int, fields []FormField) (data []string, ok bool, err error) {
 	data = []string{}
 	cmd := []string { "--form", msg, height, width, "0" }
@@ -184,14 +202,19 @@ func Form(msg string, labelWidth, valueWidth int, fields []FormField) (data []st
 	return
 }
 
+// FSelect asks the user for a file.
 func FSelect(fil string) (path string, ok bool, err error) {
 	return ExecDialog("--fselect", fil, height, width)
 }
 
+// InfoBox shows a message to the user but doesn't clean the screen
+// afterwards. This is usefull to display a message until some
+// operation finishes.
 func InfoBox(msg string) (res string, ok bool, err error) {
 	return ExecDialog("--infobox", msg, height, width)
 }
 
+// InputBox queries for a string to the user.
 func InputBox(msg string, initOpt string) (res string, ok bool, err error) {
 	cmd := []string { "--inputbox", msg, height, width }
 	if initOpt != "" {
@@ -200,6 +223,9 @@ func InputBox(msg string, initOpt string) (res string, ok bool, err error) {
 	return ExecDialog(cmd...)
 }
 
+// Menu : As its name suggests, a menu box is a dialog box that can be
+// used to present a list of choices in the form of a menu for the
+// user to choose.
 func Menu(msg string, menu []MenuItem) (key string, ok bool, err error) {
 	cmd := []string { "--menu", msg, height, width, "0" }
 	for _, i := range menu {
@@ -208,11 +234,13 @@ func Menu(msg string, menu []MenuItem) (key string, ok bool, err error) {
 	return ExecDialog(cmd...)
 }
 
+// MsgBox displays a message box.
 func MsgBox(msg string) (ok bool, err error) {
 	_, ok, err = ExecDialog("--msgbox", msg, height, width)
 	return
 }
 
+// PasswordBox asks the user for a password.
 func PasswordBox(msg string, initOpt string) (res string, ok bool, err error) {
 	cmd := []string { "--passwordbox", msg, height, width }
 	if initOpt != "" {
@@ -221,11 +249,13 @@ func PasswordBox(msg string, initOpt string) (res string, ok bool, err error) {
 	return ExecDialog(cmd...)
 }
 
+// Pause asks the user to click enter.
 func Pause(msg string, secs int) (ok bool, err error) {
 	_, ok, err = ExecDialog("--pause", msg, height, width, strconv.Itoa(secs))
 	return
 }
 
+// RadioList displays a radio list.
 func RadioList(msg string, items []TagItemStatus) (sel string, ok bool, err error) {
 	cmd := []string { "--radiolist", msg, height, width, "0" }
 	for _, i := range items {
@@ -234,6 +264,7 @@ func RadioList(msg string, items []TagItemStatus) (sel string, ok bool, err erro
 	return ExecDialog(cmd...)
 }
 
+// RangeBox queries the user o select from a range of values using a slider.
 func RangeBox(msg string, min, max, def int) (res int, ok bool, err error) {
 	cmd := []string {
 		"--rangebox", msg, height, width,
@@ -249,20 +280,21 @@ func RangeBox(msg string, min, max, def int) (res int, ok bool, err error) {
 	return
 }
 
+// TextBox shows a text.
 func TextBox(file string) (ok bool, err error) {
 	_, ok, err = ExecDialog("--textbox", file, height, width)
 	return
 }
 
+// YesNo asks the user a yes/no question.
 func YesNo(msg string) (ok bool, err error) {
 	_, ok, err = ExecDialog("--yesno", msg, height, width)
 	return
 }
 
 
-// ===================================================================
-// ==== EXTRA ========================================================
-// ===================================================================
+// MenuList is like Menu but takes an array and returns the index
+// of the selected item.
 func MenuList(msg string, menu []string) (num int, ok bool, err error) {
 	items := make([]MenuItem, len(menu))
 	for i, s := range menu {
@@ -277,6 +309,7 @@ func MenuList(msg string, menu []string) (num int, ok bool, err error) {
 	return
 }
 
+// TextBoxString shows msg in a text box.
 func TextBoxString(msg string) (ok bool, err error) {
 	var fp *os.File
 	fp, err = ioutil.TempFile("", "dialog")
